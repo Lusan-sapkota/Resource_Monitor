@@ -39,8 +39,8 @@
         </key>
         <key name="rightclickstatus" type="b">
             <default>true</default>
-            <summary>Open preferences on right-click</summary>
-            <description>When enabled, right-clicking the indicator opens the extension preferences window.</description>
+            <summary>Open Preferences on Right-click</summary>
+            <description>Show the preferences window when the indicator is right-clicked.</description>
         </key>
         <key name="iconsstatus" type="b">
             <default>true</default>

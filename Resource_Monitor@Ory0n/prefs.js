@@ -1081,20 +1081,24 @@ const ResourceMonitorPrefsWidget = GObject.registerClass(
       return icons[item] ?? "applications-system-symbolic";
     }
 
-    _resolveLeftClickPreset(activeCommand, customCommand) {
-      if (activeCommand === "gnome-system-monitor") {
+    _resolveClickPreset(value, customValue, defaultPreset = "system-monitor") {
+      if (value === "gnome-system-monitor" || value === "system-monitor") {
         return "system-monitor";
       }
-
-      if (activeCommand === "gnome-usage") {
+      if (value === "gnome-usage") {
         return "gnome-usage";
       }
-
-      if (activeCommand === customCommand) {
+      if (value === "preferences") {
+        return "preferences";
+      }
+      if (value === customValue && value !== "custom-program") {
         return "custom";
       }
+      return defaultPreset;
+    }
 
-      return "custom";
+    _resolveLeftClickPreset(value, customValue) {
+      return this._resolveClickPreset(value, customValue, "system-monitor");
     }
 
     _buildNativeGlobalPage() {
@@ -2152,6 +2156,12 @@ const ResourceMonitorPrefsWidget = GObject.registerClass(
           this._settings.set_string(LEFT_CLICK_STATUS, entry.text);
         }
       });
+
+      connectSwitchButton(
+        this._settings,
+        RIGHT_CLICK_STATUS,
+        this._extensionRightClickPrefs
+      );
 
       // ListBox
       let itemsPositionArray = this._settings.get_strv(ITEMS_POSITION);

@@ -438,11 +438,12 @@ const ResourceMonitor = GObject.registerClass(
     }
 
     _updatePanelTooltip() {
-      const rightClickAction = this._rightClickStatus
+      const rightClickText = this._rightClickStatus
         ? _("Open preferences")
         : _("Disabled");
+
       this._setPanelTooltip(
-        `${_("Left-click")}: ${this._getPrimaryActionDisplayName()}\n${_("Right-click")}: ${rightClickAction}`
+        `${_("Left-click")}: ${this._getPrimaryActionDisplayName()}\n${_("Right-click")}: ${rightClickText}`
       );
     }
 
@@ -667,18 +668,32 @@ const ResourceMonitor = GObject.registerClass(
       switch (event.get_button()) {
         case 3: // Right-click
           if (this._rightClickStatus) {
-            this._openPreferences();
+            this._launchRightClickAction();
           }
 
           return Clutter.EVENT_STOP;
 
         case 1: // Left-click
           this._launchPrimaryAction();
-
           return Clutter.EVENT_STOP;
 
         default:
           return Clutter.EVENT_PROPAGATE;
+      }
+    }
+
+    _launchRightClickAction() {
+      try {
+        this._openPreferences();
+      } catch (error) {
+        // fallback
+        try {
+          Main.extensionManager.openExtensionPrefs(this._metadata.uuid);
+        } catch (fallbackError) {
+          this._logger.error(
+            `[Resource_Monitor] Error opening preferences: ${error} (Fallback: ${fallbackError})`
+          );
+        }
       }
     }
 
@@ -692,7 +707,7 @@ const ResourceMonitor = GObject.registerClass(
 
         case Clutter.KEY_Menu:
           if (this._rightClickStatus) {
-            this._openPreferences();
+            this._launchRightClickAction();
             return Clutter.EVENT_STOP;
           }
           return Clutter.EVENT_PROPAGATE;
@@ -706,30 +721,136 @@ const ResourceMonitor = GObject.registerClass(
       const action =
         typeof this._leftClickStatus === "string"
           ? this._leftClickStatus.trim()
-          : "";
-      if (action === "") {
+          : "system-monitor";
+
+      this._launchAppOrCommand(action);
+    }
+
+    _launchAppOrCommand(action) {
+      if (!action || action === "") {
         return;
+      }
+
+      this._logger.debug(`[Resource_Monitor] Attempting to launch action: ${action}`);
+
+      let command = action;
+      let appIds = [];
+      let searchTerms = [];
+
+      if (action === "system-monitor" || action === "gnome-system-monitor") {
+        command = "gnome-system-monitor";
+        appIds = [
+          "org.gnome.SystemMonitor.desktop",
+          "gnome-system-monitor.desktop",
+          "org.gnome.system-monitor.desktop",
+          "io.missioncenter.MissionCenter.desktop",
+          "net.nokyan.Resources.desktop",
+        ];
+        searchTerms = ["system monitor", "monitor risorse", "monitor de sistema", "mission center", "resources"];
+      } else if (action === "gnome-usage") {
+        command = "gnome-usage";
+        appIds = [
+          "org.gnome.Usage.desktop",
+          "gnome-usage.desktop",
+          "org.gnome.usage.desktop"
+        ];
+        searchTerms = ["usage", "utilizzo", "uso"];
+      } else {
+        appIds = [action.endsWith(".desktop") ? action : `${action}.desktop`];
       }
 
       const appSystem = Shell.AppSystem.get_default();
-      const appId = action.endsWith(".desktop") ? action : `${action}.desktop`;
-      const app = appSystem.lookup_app(appId);
+      let app = null;
 
-      if (app) {
-        app.activate();
-        return;
+      // 1. Try by ID
+      for (const id of appIds) {
+        app = appSystem.lookup_app(id);
+        if (app) {
+          this._logger.debug(`[Resource_Monitor] Found application by ID: ${id}`);
+          break;
+        }
       }
 
+      // 2. Try by Name/ID (Fuzzy search for known presets)
+      if (!app && searchTerms.length > 0) {
+        const allApps = appSystem.get_installed();
+        app = allApps.find((a) => {
+          const name = a.get_name().toLowerCase();
+          const id = a.get_id().toLowerCase();
+          return (
+            searchTerms.some((term) => name === term || name.startsWith(term)) ||
+            searchTerms.some((term) => id.includes(term.replace(" ", "")))
+          );
+        });
+        if (app) {
+          this._logger.debug(`[Resource_Monitor] Found application by name/id search: ${app.get_name()} (${app.get_id()})`);
+        }
+      }
+
+      // 3. Try searching for a matching command in installed apps
+      if (!app) {
+        const allApps = appSystem.get_installed();
+        app = allApps.find((a) => {
+          const appCommand = a.get_commandline ? a.get_commandline() : "";
+          return appCommand && appCommand.includes(command);
+        });
+        if (app) {
+          this._logger.debug(`[Resource_Monitor] Found application by command match: ${app.get_name()}`);
+        }
+      }
+
+      if (app) {
+        try {
+          if (typeof app.activate === "function") {
+            app.activate();
+          } else if (typeof app.launch === "function") {
+            app.launch(0, null);
+          } else if (typeof app.open_new_window === "function") {
+            app.open_new_window(0);
+          } else {
+            throw new Error("No valid launch method found on app object");
+          }
+          return;
+        } catch (error) {
+          this._logger.error(
+            `[Resource_Monitor] Error activating app ${app.get_id()}: ${error}`
+          );
+          // Fall through
+        }
+      }
+
+      // 4. Try to find binary in PATH for presets
+      if (action === "system-monitor" || action === "gnome-system-monitor") {
+        const binaries = ["gnome-system-monitor", "system-monitor", "missioncenter", "resources", "gnome-usage"];
+        for (const bin of binaries) {
+          if (GLib.find_program_in_path(bin)) {
+            command = bin;
+            break;
+          }
+        }
+      }
+
+      this._logger.debug(`[Resource_Monitor] Final fallback spawning: ${command}`);
       try {
-        Util.spawnCommandLine(action);
-      } catch (error) {
-        this._notifyMemoryAlert(
-          this._metadata?.name ?? _("Resource Monitor"),
-          _("Unable to launch the configured action.")
-        );
-        this._logger.error(
-          `[Resource_Monitor] Error spawning ${action}: ${error}`
-        );
+        // Try launching as a proper AppInfo first for better environment handling
+        const appInfo = Gio.AppInfo.create_from_commandline(command, null, Gio.AppInfoCreateFlags.NONE);
+        if (appInfo) {
+          appInfo.launch([], null);
+          return;
+        }
+      } catch (e) {
+        // Fall back to old Util method if AppInfo creation fails
+        try {
+          Util.spawnCommandLine(command);
+        } catch (error) {
+          this._notifyMemoryAlert(
+            this._metadata?.name ?? _("Resource Monitor"),
+            _("Unable to launch the configured action.")
+          );
+          this._logger.error(
+            `[Resource_Monitor] All launch methods failed for ${command}: ${error}`
+          );
+        }
       }
     }
 
