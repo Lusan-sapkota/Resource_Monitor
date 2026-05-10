@@ -35,18 +35,56 @@ For older releases, use the dedicated maintenance branches:
 - [gnome-3.28-3.38](../../tree/gnome-3.28-3.38)
 - [gnome-40-44](../../tree/gnome-40-44)
 
-## Installation
+## Install & Update
 
-### GNOME Extensions (recommended)
+> [!IMPORTANT]
+> You can clone this repository anywhere you like, but you **must** be inside the project folder (`cd Resource_Monitor`) when running the scripts.
 
-Install from [extensions.gnome.org](https://extensions.gnome.org/extension/1634/resource-monitor/).
+The easiest way to install or update this patched extension is using the provided `install.sh` script.
 
-### Manual installation from GitHub release
+### 1. Clone or Pull the latest code
 
-1. Download the latest [GitHub release](../../releases/latest).
-2. Extract `Resource_Monitor@Ory0n.zip`.
-3. Move `Resource_Monitor@Ory0n` to `~/.local/share/gnome-shell/extensions/`.
-4. Enable the extension from the GNOME Extensions app.
+```bash
+git clone https://github.com/Lusan-sapkota/Resource_Monitor.git
+cd Resource_Monitor
+# Or if already cloned: git pull
+```
+
+### 2. Run the installer
+
+```bash
+bash install.sh
+```
+
+The script will automatically compile the schemas and attempt to refresh GNOME and enable the extension. **If it succeeds, you are done!**
+
+---
+
+### Manual Setup (If script fails)
+
+If the extension doesn't appear after running the script, follow these manual steps:
+
+**3. Restart GNOME Shell / Logout**
+- **Wayland**: Log out and log back in.
+- **X11**: Press Alt+F2, type 'r', and press Enter.
+
+**4. Enable the extension**
+```bash
+gnome-extensions enable Resource_Monitor@Ory0n
+```
+
+**Verify:**
+```bash
+gnome-extensions list | grep Resource_Monitor
+```
+
+## Uninstall
+
+Make sure you are inside the repository folder, then run:
+
+```bash
+bash uninstall.sh
+```
 
 ## Development
 
