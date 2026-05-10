@@ -106,6 +106,8 @@ export function initializeSettings(indicator, keys) {
   );
   indicator._thermalCpuTemperatureWidth =
     indicator._settings.get_int(keys.THERMAL_CPU_TEMPERATURE_WIDTH);
+  indicator._thermalCpuTemperatureMode =
+    indicator._settings.get_string(keys.THERMAL_CPU_TEMPERATURE_MODE);
   indicator._thermalCpuColors = indicator._settings.get_strv(keys.THERMAL_CPU_COLORS);
   indicator._thermalCpuTemperatureDevices = indicator._parseSettingsArray(
     keys.THERMAL_CPU_TEMPERATURE_DEVICES_LIST,
@@ -204,6 +206,7 @@ export function connectSettingsSignals(indicator, keys) {
     [keys.THERMAL_TEMPERATURE_UNIT, "_thermalTemperatureUnitChanged"],
     [keys.THERMAL_CPU_TEMPERATURE_STATUS, "_thermalCpuTemperatureStatusChanged"],
     [keys.THERMAL_CPU_TEMPERATURE_WIDTH, "_thermalCpuTemperatureWidthChanged"],
+    [keys.THERMAL_CPU_TEMPERATURE_MODE, "_thermalCpuTemperatureModeChanged"],
     [keys.THERMAL_CPU_COLORS, "_thermalCpuColorsChanged"],
     [keys.THERMAL_CPU_TEMPERATURE_DEVICES_LIST, "_thermalCpuTemperatureDevicesListChanged"],
     [keys.THERMAL_GPU_TEMPERATURE_STATUS, "_thermalGpuTemperatureStatusChanged"],
@@ -248,6 +251,7 @@ export function refreshGui(indicator) {
   indicator._diskStatsModeChanged();
   indicator._diskSpaceStatusChanged();
   indicator._diskSpaceWidthChanged();
+  indicator._thermalCpuTemperatureModeChanged();
   indicator._diskDevicesListChanged();
   indicator._netEthStatusChanged();
   indicator._netEthWidthChanged();

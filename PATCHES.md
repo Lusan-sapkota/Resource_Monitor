@@ -24,3 +24,8 @@ This document tracks the improvements and fixes applied to this fork of the Reso
 - **GNOME 45/50+ Support**: Modernized the codebase for ESM (ECMAScript Modules) and fixed compatibility issues with newer GNOME Shell versions (up to 50.1).
 - **Robust Launch Logic**: Added safety checks for `app.activate()`, `app.launch()`, and `app.open_new_window()` to handle differences in how various GNOME versions manage application objects.
 - **Settings Integrity**: Cleaned up orphaned GSettings references to prevent "key undefined" errors in the shell logs.
+
+## Thermal & Sensors
+- **CPU Temperature Aggregation**: Added options to choose between **Average**, **Highest**, or **Lowest** temperature across all CPU cores.
+- **Improved Sensor Discovery**: Removed restrictive whitelisting to support a wider range of hardware, including 13th Gen Intel and modern AMD CPUs.
+- **Real-time Configuration**: Changes to aggregation modes take effect immediately in the panel without needing an extension restart.

@@ -138,6 +138,7 @@ const NET_WLAN_COLORS = "netwlancolors";
 
 const THERMAL_TEMPERATURE_UNIT = "thermaltemperatureunit";
 const THERMAL_CPU_TEMPERATURE_STATUS = "thermalcputemperaturestatus";
+const THERMAL_CPU_TEMPERATURE_MODE = "thermalcputemperaturemode";
 const THERMAL_CPU_TEMPERATURE_WIDTH = "thermalcputemperaturewidth";
 const THERMAL_CPU_COLORS = "thermalcpucolors";
 const THERMAL_CPU_TEMPERATURE_DEVICES_LIST = "thermalcputemperaturedeviceslist";
@@ -922,10 +923,6 @@ const ResourceMonitorPrefsWidget = GObject.registerClass(
       for (const descriptor of descriptors) {
         try {
           const chipName = decoder.decode(await loadFile(descriptor.namePath)).trim();
-          if (!isSupportedCpuThermalChip(chipName)) {
-            continue;
-          }
-
           let label = descriptor.fallbackLabel;
           if (GLib.file_test(descriptor.labelPath, GLib.FileTest.EXISTS)) {
             try {
@@ -1802,6 +1799,13 @@ const ResourceMonitorPrefsWidget = GObject.registerClass(
           _("Reserved Width"),
           _("Reserve a fixed amount of space for CPU temperature values."),
           this._thermalCpuWidthSpinbutton
+        )
+      );
+      cpuGroup.add(
+        this._createActionRow(
+          _("Calculation Mode"),
+          _("Choose how to aggregate temperatures from multiple cores."),
+          this._thermalCpuModeCombobox
         )
       );
       page.add(cpuGroup);
@@ -2849,6 +2853,11 @@ const ResourceMonitorPrefsWidget = GObject.registerClass(
       ]);
       this._thermalCpuDisplay = this._createSwitch();
       this._thermalCpuWidthSpinbutton = this._createSpinButton({ upper: 500 });
+      this._thermalCpuModeCombobox = this._createComboBox([
+        ["average", _("Average")],
+        ["highest", _("Highest")],
+        ["lowest", _("Lowest")],
+      ]);
       this._thermalCpuColorsAddButton = this._createIconButton("list-add");
       this._thermalCpuColorsListbox = this._createListBox();
       this._thermalCpuDevicesColumnView = this._createColumnView();
@@ -2874,6 +2883,11 @@ const ResourceMonitorPrefsWidget = GObject.registerClass(
         THERMAL_CPU_TEMPERATURE_WIDTH,
         this._thermalCpuWidthSpinbutton
       );
+      connectComboBox(
+        this._settings,
+        THERMAL_CPU_TEMPERATURE_MODE,
+        this._thermalCpuModeCombobox
+      );
       connectSwitchButton(
         this._settings,
         THERMAL_GPU_TEMPERATURE_STATUS,
@@ -2887,6 +2901,7 @@ const ResourceMonitorPrefsWidget = GObject.registerClass(
 
       this._initializeToggleControlledSection(this._thermalCpuDisplay, [
         this._thermalCpuWidthSpinbutton,
+        this._thermalCpuModeCombobox,
       ]);
       this._initializeToggleControlledSection(this._thermalGpuDisplay, [
         this._thermalGpuWidthSpinbutton,

@@ -323,10 +323,17 @@
             <summary>Temperature unit</summary>
             <description>Displays thermal readings in Celsius or Fahrenheit.</description>
         </key>
+
         <key name="thermalcputemperaturestatus" type="b">
             <default>false</default>
             <summary>Show CPU temperature</summary>
-            <description>Displays averaged CPU thermal readings in the panel.</description>
+            <description>Displays CPU thermal readings in the panel.</description>
+        </key>
+
+        <key name="thermalcputemperaturemode" type="s">
+            <default>"average"</default>
+            <summary>CPU temperature display mode</summary>
+            <description>Choose how multi-core temperatures are aggregated: "average", "highest", or "lowest".</description>
         </key>
         <key name="thermalcputemperaturewidth" type="i">
             <default>0</default>

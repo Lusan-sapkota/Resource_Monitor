@@ -1,8 +1,7 @@
 import { convertTemperature } from "./metrics.js";
 
-export function buildCpuTemperatureDisplay(results, preferredUnit) {
-  let totalTemperature = 0;
-  let readings = 0;
+export function buildCpuTemperatureDisplay(results, preferredUnit, mode = "average") {
+  let values = [];
 
   results.forEach((result) => {
     if (result.status !== "fulfilled") {
@@ -11,20 +10,31 @@ export function buildCpuTemperatureDisplay(results, preferredUnit) {
 
     const temperature = parseInt(new TextDecoder().decode(result.value), 10);
     if (!isNaN(temperature)) {
-      totalTemperature += temperature / 1000;
-      readings++;
+      values.push(temperature / 1000);
     }
   });
 
-  if (readings === 0) {
+  if (values.length === 0) {
     return null;
   }
 
-  const average = totalTemperature / readings;
-  const [value, unit] = convertTemperature(average, preferredUnit);
+  let resultTemperature;
+  switch (mode) {
+    case "highest":
+      resultTemperature = Math.max(...values);
+      break;
+    case "lowest":
+      resultTemperature = Math.min(...values);
+      break;
+    case "average":
+    default:
+      resultTemperature = values.reduce((a, b) => a + b, 0) / values.length;
+      break;
+  }
+
+  const [value, unit] = convertTemperature(resultTemperature, preferredUnit);
 
   return {
-    average,
     value,
     unit,
   };

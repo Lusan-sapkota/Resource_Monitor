@@ -169,6 +169,7 @@ const NET_WLAN_COLORS = "netwlancolors";
 
 const THERMAL_TEMPERATURE_UNIT = "thermaltemperatureunit";
 const THERMAL_CPU_TEMPERATURE_STATUS = "thermalcputemperaturestatus";
+const THERMAL_CPU_TEMPERATURE_MODE = "thermalcputemperaturemode";
 const THERMAL_CPU_TEMPERATURE_WIDTH = "thermalcputemperaturewidth";
 const THERMAL_CPU_COLORS = "thermalcpucolors";
 const THERMAL_CPU_TEMPERATURE_DEVICES_LIST = "thermalcputemperaturedeviceslist";
@@ -268,6 +269,7 @@ const SETTINGS_KEYS = {
   NET_WLAN_COLORS,
   THERMAL_TEMPERATURE_UNIT,
   THERMAL_CPU_TEMPERATURE_STATUS,
+  THERMAL_CPU_TEMPERATURE_MODE,
   THERMAL_CPU_TEMPERATURE_WIDTH,
   THERMAL_CPU_COLORS,
   THERMAL_CPU_TEMPERATURE_DEVICES_LIST,
@@ -1599,6 +1601,16 @@ const ResourceMonitor = GObject.registerClass(
 
     _thermalCpuColorsChanged() {
       this._thermalCpuColors = this._settings.get_strv(THERMAL_CPU_COLORS);
+
+      if (this._hasVisibleThermalCpuTemperature()) {
+        this._refreshCpuTemperatureValue();
+      }
+    }
+
+    _thermalCpuTemperatureModeChanged() {
+      this._thermalCpuTemperatureMode = this._settings.get_string(
+        THERMAL_CPU_TEMPERATURE_MODE
+      );
 
       if (this._hasVisibleThermalCpuTemperature()) {
         this._refreshCpuTemperatureValue();

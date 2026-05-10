@@ -594,7 +594,8 @@ export function refreshCpuTemperatureValue(indicator) {
         .then((results) => {
           const display = buildCpuTemperatureDisplay(
             results,
-            indicator._thermalTemperatureUnit
+            indicator._thermalTemperatureUnit,
+            indicator._thermalCpuTemperatureMode
           );
 
           if (!display) {
