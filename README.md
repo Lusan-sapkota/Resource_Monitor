@@ -1,10 +1,20 @@
-[ego]: https://extensions.gnome.org/extension/1634/resource-monitor/
+# Resource Monitor (GNOME Shell Extension) - Patched Fork
 
-# Resource Monitor (GNOME Shell Extension) [<img src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg?sanitize=true" alt="Get it on GNOME Extensions" height="100" align="right">][ego]
+> [!NOTE]
+> This is a **patched fork** of the original [Resource Monitor](https://github.com/0ry0n/Resource_Monitor) project. 
+> The goal of this fork is to keep the extension updated and fix bugs related to recent GNOME versions.
 
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
-[![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-pink?logo=githubsponsors)](https://github.com/sponsors/0ry0n)
-[![Donate](https://img.shields.io/badge/Donate-PayPal-00457C?logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/0ry0n)
+This fork includes several important patches merged from other contributors:
+- **PR #128**: Fix indicator button click on Gnome 50 (by NathanBaulch)
+- **PR #130**: fix(panel): hide empty monitor groups (by VictorBenitoGR)
+- **PR #131**: fix(panel): avoid iconless layout spacing (by VictorBenitoGR)
+
+## Funding & Support
+If you would like to support the original development of this project, please fund the original repository here:
+- **GitHub Sponsors**: [0ry0n](https://github.com/sponsors/0ry0n)
+- **PayPal**: [PayPal.me/0ry0n](https://www.paypal.com/paypalme/0ry0n)
+
+---
 
 Resource Monitor is a GNOME Shell extension that shows live system metrics directly in the top bar.
 
@@ -15,10 +25,6 @@ Multi-panel mode is supported through Dash to Panel. Without Dash to Panel, the 
 Current stable release: `27` (`2026-03-20`).
 
 ![Resource Monitor main view](images/main.png)
-
-## Support the Project
-
-If this extension is useful to you, you can support ongoing development via [GitHub Sponsors](https://github.com/sponsors/0ry0n) or [PayPal](https://www.paypal.com/paypalme/0ry0n).
 
 ## Supported GNOME Shell Versions
 
